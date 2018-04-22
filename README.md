@@ -1,4 +1,4 @@
-# C++ Crash Course Review on Code
+# C++ Crash Course Review in Code
 
 I tried to comment all my perspectives as a developer that came 
 from another regular languages like JAVA and JavaScript on this 
