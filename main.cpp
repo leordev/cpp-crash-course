@@ -1,5 +1,5 @@
 /**
- * #include is a prepocessor operator that works
+ * #include is a preprocessor operator that works
  * literally like a "smart" copy and paste
  */
 #include <iostream>  // for std::cout, std::cin
@@ -7,7 +7,9 @@
 #include <random>    // for std::random_device, std::mt19937
 #include <algorithm> // for std::sort, std::uniform_int_distribution
 #include <vector>    // for std::vector
+#include <map>       // for std::map
 #include <fstream>   // for std::ifstream
+#include <memory>    // for std::make_unique
 #include "rectangle.hpp" // for use of the Rectangle class
 
 // if you dont want to keep writing std:: every time
@@ -158,16 +160,149 @@ void ex_rectangle() {
     print_rectangle_info(r);
 }
 
+template <typename T>
+constexpr T maxValue = T(1000);
+
+template <>
+constexpr double maxValue<double> = 2000;
+
+template <>
+constexpr double maxValue<std::string> = 5000;
+
+void ex_templates() {
+    std::cout << " maxValue<int>          : " << maxValue<int> << "\n";
+    std::cout << " maxValue<double>       : " << maxValue<double> << "\n";
+    std::cout << " maxValue<std::string>  : " << maxValue<std::string> << "\n";
+}
+
+// raw pointers are very dangerous and there's no reason to utilize
+// it on C++14... if you really need to use it YOU MUST NOT FORGET
+// TO DELETE IT!!! the declaration syntax is: type * p_name
+// the destruction syntax is delete p_name; followed by
+// p_name = nullptr; as a good convention
+void ex_raw_pointer() {
+    Rectangle * p_rec = new Rectangle(10, 15);
+    p_rec->Scale(2);
+
+    // try to comment below and you will
+    // find out that the rectangle destructor
+    // will never be called
+    delete p_rec;
+    p_rec = nullptr;
+}
+
+// for smart pointers you don't need to worry about the destruction
+// from c++14 use it and be happy :)
+// no matter what the Rectangle will run destructor.
+void ex_smart_pointer() {
+    std::unique_ptr<Rectangle> p_rec = std::make_unique<Rectangle>(10,15);
+    p_rec->Scale(2);
+}
+
+void ex_lambdas() {
+    std::vector<std::string> names{"Leo", "John", "Ana", "Robert", "Lucca", "Martin"};
+
+
+    // lambdas are anonymous functions declared by the syntax []
+    // in the below example I'm changing the default sort behavior
+    // to order by the size of a string instead of alphabetical
+    std::sort(begin(names), end(names),
+        [](std::string const& a, std::string const& b) {
+            return a.length() < b.length();
+        }
+    );
+
+    for(std::string name : names) {
+        std::cout << "\nname: " << name;
+    }
+
+    // if you need to use pointer inside lambdas you must
+    // use the std::move on the lambda init-capture statement
+    auto p_rec = std::make_unique<Rectangle>(10,15);
+
+    std::cout << "\n\nOutside and before the move rectangle area: " << p_rec->Area() << '\n';
+
+    auto lambda = [ptr = std::move(p_rec)](){
+        std::cout << "\nInside the lambda rectangle area: " << ptr->Area() << '\n';
+    };
+
+    lambda();
+}
+
+// a iterator is a pointer. if you want to change a value from that pointer
+// you must use * on the pointer name... otherwise you would be trying to
+// change the pointer, not the value inside
+void ex_iterators() {
+    std::vector<std::string> names{ "Leo", "Ana", "Flavia", "Scott", "John"};
+
+    // find and rename Flavia for ***
+    // if it found any value, the iterator will never be
+    // the same pointer of the end iterator... remember, end
+    // iterator always points to the last index of the vector + 1
+    if (const auto it = find(begin(names), end(names), "Flavia");
+        it != end(names)) {
+        *it = "***";
+    }
+
+    // as you saw above, with c++17 we have a new feature that
+    // we can declare variables inside it and limit the scope
+    // of the variable into it so we cant access it variable
+    // here - try to uncomment below code
+    // std::cout << *it;
+
+    for(auto n : names) {
+        std::cout << "\n Name: " << n;
+    }
+}
+
+void ex_map_with_structured_bindings() {
+    // this is a regular map structure like any other language
+    // nothing new here... unless `get` method is `.at`
+    std::map<std::string, std::string> portugueseDictionary{
+            {"casa", "gatto"},
+            {"gato", "cat"},
+            {"macarrao", "pasta"},
+            {"lasanha", "lasagna"}
+    };
+    std::cout << "The portuguese word 'macarrao' means ";
+    std::cout << portugueseDictionary.at("macarrao");
+
+    // this is an example of Structured Binding
+    // the result of a insert is a pair structure
+    // so we can use brackets to get the first and second
+    // value and name it the way we want. it's very like
+    // Pattern Matching from Functional Programming Languages!
+    // we use it a lot in elixir and elm :D
+    auto [it, success] = portugueseDictionary.insert({"cadeira", "chair"});
+
+    if(success) {
+        std::cout << "\n\nThe word cadeira was added successfully!";
+    } else {
+        auto const& [key, value] = *it;
+        std::cout << "\n\nThe word " << key << " already exists and means " << value;
+    }
+
+    for (auto const& [portuguese, english] : portugueseDictionary) {
+        std::cout << '\n' << portuguese << ": " << english;
+    }
+}
+
 int main() {
 
     // uncomment each function to play with examples :)
-    //ex_basic_calc();
-    //ex_string();
-    //gen_random_numbers();
-    //ex_swap();
-    //ex_vectors();
-    //ex_read_file();
-    ex_rectangle();
+    // ex_basic_calc();
+    // ex_string();
+    // gen_random_numbers();
+    // ex_swap();
+    // ex_vectors();
+    // ex_read_file();
+    // ex_rectangle();
+    // ex_templates();
+    // ex_raw_pointer();
+    // ex_smart_pointer();
+    // ex_lambdas();
+    // ex_iterators();
+    ex_map_with_structured_bindings();
 
     return 0;
 }
